@@ -1,6 +1,6 @@
 # Seating Chart Maker
 
-This program randomizes students into groups given some specifications (students to group together, students who should not be together, and students who need specific seats). 
+This script randomizes students into groups given some specifications (students to group together, students who should not be together, and students who need specific seats). 
 
 NOTE: This is a work in progress. The error-checking isn't particularly robust, and I'm sure I've missed some edge cases. Message me if you run into errors or have any questions!
 
@@ -9,12 +9,12 @@ Video showing steps: https://drive.google.com/file/d/1J0pGA9MA8gkrk7W_ucdJ1mo2Gj
 
 **STEP 0: Download Python from https://www.python.org/downloads/**
 
-**STEP 1: Download the program** 
+**STEP 1: Download the files** 
   1. Click the green "<> Code" button
   2. Click "Download ZIP"
   3. Unzip files
 
-**STEP 2: Put the program and specifications CSV file in a folder of your choosing**
+**STEP 2: Put the Python script and specifications CSV file in a folder of your choosing**
 
 **STEP 3: Edit the specifications file as desired**
 
@@ -22,7 +22,7 @@ Video showing steps: https://drive.google.com/file/d/1J0pGA9MA8gkrk7W_ucdJ1mo2Gj
 
 **STEP 5: Click "Open in Terminal"**
 
-**STEP 6: Type ```python seating_chart.py``` to run the program**
+**STEP 6: Type ```python seating_chart.py``` to run the script**
 
 
 ## Specification Details
