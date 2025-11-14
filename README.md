@@ -5,6 +5,7 @@ This program randomizes students into groups given some specifications (students
 NOTE: This is a work in progress. The error-checking isn't particularly robust, and I'm sure I've missed some edge cases. Message me if you run into errors or have any questions!
 
 ## Download and Usage Instructions
+Video showing steps: https://drive.google.com/file/d/1J0pGA9MA8gkrk7W_ucdJ1mo2GjPVmq2j/view?usp=sharing
 
 **STEP 0: Download Python from https://www.python.org/downloads/**
 
@@ -48,6 +49,3 @@ You can create several specification CSV files for your different sections. You 
     * Example: ```Specify Table,Plum 4 5,Cherry 1 2 3```
         * Plum feels most comfortable sitting at table 4 or table 5
         * Cherry needs to sit at table 1, 2, or 3 to see the board 
-
-  
-## Video Tutorial
