@@ -1,22 +1,49 @@
 import random 
 import math
+import csv
+
+# TODO add more error checking
 
 ################################################################################################################################################
+
+print('Enter the filename of your specifications file (ex: specifications.csv): ')
+filename = input()
+print()
+
+with open(filename) as specs:
+    reader = csv.reader(specs)
+    rows = []
+    for row in reader:
+        rows.append(list(filter(lambda x: x != '', row)))
+
+tables = list(map(int, rows[0][1:]))
+seats_per_table = list(map(int, rows[1][1:]))
+ideal_group_num = int(rows[2][1])
+students = rows[3][1:]
+
+group_together = []
+for group in rows[4][1:]:
+    if len(group.split()) > max(seats_per_table):
+        print('No table has enough room for specified group of students to sit together:', group)
+        print('Revise specifications and try again.')
+        quit()
+    group_together.append(group.split())
+
+do_not_group = []
+for pair in rows[5][1:]:
+    if(len(pair.split()) > 2):
+        print('"Do Not Pair" must only contain pairs of students. Revise specifications and try again.')
+        quit()
+    do_not_group.append(pair.split())
+
+specific_seats = []
+for spec in rows[6][1:]:
+    specification = spec.split()
+    for i, table in enumerate(specification[1:]):
+        specification[i + 1] = int(table)
+    specific_seats.append(specification)
+
 ################################################################################################################################################
-
-tables = [1, 2, 3, 4, 5, 6, 7, 8, 9]
-seats_per_table = [3, 3, 3, 3, 3, 3, 3, 3, 2]
-ideal_group_num = 3
-
-students = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M', 'N', 'O', 'P', 'Q', 'R', 'S', 'T', 'U', 'V', 'W', 'X', 'Y', 'Z']
-
-do_not_group = [['A', 'B'], ['C', 'D'], ['E', 'F']]
-group_together = [['A','T'], ['F', 'G']]
-specific_seats = [['A', 1, 2, 3], ['U', 4, 5]]
-
-################################################################################################################################################
-################################################################################################################################################
-
 
 def place_student(s_to_place, s_to_avoid):
     unseated = True
@@ -26,42 +53,69 @@ def place_student(s_to_place, s_to_avoid):
         desired_table = seating_chart[table_num]
 
         if desired_table.count(0) > 0 and not any(s == s_to_avoid for s in desired_table):
-            desired_table[desired_table.index(0)] = s_to_place
-            unseated = False
+            # check if student has a partner
+            if any(s_to_place in group for group in group_together):
+                # check that there's room at the table for an additional person
+                for group in group_together:
+                    if s_to_place in group:
+                        if desired_table.count(0) >= len(group_together[group_together.index(group)]):  # have enough room :)
+                            for s in group:
+                                desired_table[desired_table.index(0)] = s          
+
+                            unseated = False
+                        break
+
+            else:
+                desired_table[desired_table.index(0)] = s_to_place
+                unseated = False
 
         count += 1
     
     if count == 50:
-        print('Impossible specifications. Check input parameters.')
+        print_seating_chart(seating_chart)
+        print('Encountered infinite loop attempting to assign a seat to ' + s_to_place + '. Check specifications and try again.')
         quit()
 
 
+def print_seating_chart(seating_chart):
+    for i, table in enumerate(seating_chart):
+        students = ''
+        for s in table:
+            if s != 0:
+                students = students + s + '  '
+
+        print('Table ' + str(tables[i]) + ':  ' + students)
+        
+    print()
+
+################################################################################################################################################
+
 # check that seats = tables
 if len(tables) != len(seats_per_table):
-    print("Size mismatch: Check the number of tables and seats per table.")
+    print('Size mismatch: Check the number of tables and seats per table.')
     quit()
 
-# TODO check that students don't appear multiple times in group_together
-# TODO add error checking
 
-# remove tables to avoid gaps
+# verify that there are enough seats
 total_seats = sum(seats_per_table)
 num_students = len(students)
 
-num_groups = math.ceil(num_students/ideal_group_num)
-ideal_num_seats = num_groups * ideal_group_num
-
-while total_seats - ideal_num_seats >= seats_per_table[-1]:
-    seats_per_table = seats_per_table[:-1]
-    tables = tables[:-1]
-
-    total_seats = sum(seats_per_table)
+if(num_students > total_seats):
+    print(str(total_seats) + ' seats and ' + str(num_students) + ' students. Not enough seats for all students. Revise specifications and try again.')
+    quit()
 
 
-# sort lists
-do_not_group = sorted(do_not_group, key=len)
-group_together = sorted(group_together, key=len)
-specific_seats = sorted(specific_seats, key=len)
+# remove tables to avoid gaps
+if ideal_group_num:
+    ideal_number_of_groups = math.ceil(num_students/ideal_group_num)
+    while total_seats - num_students >= seats_per_table[-1] and len(tables) > ideal_number_of_groups:
+        if not(any(tables[-1] in group for group in specific_seats)):
+            seats_per_table = seats_per_table[:-1]
+            tables = tables[:-1]
+
+            total_seats = sum(seats_per_table)
+        else:
+            break
 
 
 # create seating chart
@@ -72,8 +126,9 @@ for table in range(len(tables)):
     for seat in range(seats_per_table[table]):
         seating_chart[table].append(0)
 
-
 # assign students who need specific seats
+specific_seats = sorted(specific_seats, key=len)
+
 for i in specific_seats:
     unseated = True
     count = 0
@@ -103,30 +158,7 @@ for i in specific_seats:
         count += 1
     
     if count == 50:
-        print('Impossible specifications. Check input parameters.')
-        quit()
-
-
-# assign students who need to sit together
-for group in group_together:
-    if any(group[0] in table for table in seating_chart):
-        continue
-
-    unseated = True
-    count = 0
-    while unseated and count < 50:
-        table_num = random.randint(0, len(tables) - 1)   # pick random table
-        desired_table = seating_chart[table_num]
-
-        if desired_table.count(0) >= len(group):
-            for s in group:
-                desired_table[desired_table.index(0)] = s
-            unseated = False
-
-        count += 1
-    
-    if count == 50:
-        print('Impossible specifications. Check input parameters.')
+        print('Encountered infinite loop attempting to assign students who need specific seats. Try running again. If error persists, revise specifications.')
         quit()
 
 
@@ -155,6 +187,29 @@ for group in do_not_group:
         place_student(s2, s1)
 
 
+# assign students who need to sit together
+for group in group_together:
+    if any(group[0] in table for table in seating_chart):
+        continue
+
+    unseated = True
+    count = 0
+    while unseated and count < 50:
+        table_num = random.randint(0, len(tables) - 1)   # pick random table
+        desired_table = seating_chart[table_num]
+
+        if desired_table.count(0) >= len(group):
+            for s in group:
+                desired_table[desired_table.index(0)] = s
+            unseated = False
+
+        count += 1
+    
+    if count == 50:
+        print('Encountered infinite loop attempting to assign students who need to sit together. Check specifications and try again.')
+        quit()
+
+
 # assign remaining students
 for student in students:
     if not any(student in table for table in seating_chart):
@@ -162,10 +217,4 @@ for student in students:
 
 
 # print seating chart
-for i, table in enumerate(seating_chart):
-    students = ''
-    for s in table:
-        if s != 0:
-            students = students + s + '  '
-
-    print('Table ' + str(tables[i]) + ':  ' + students)
+print_seating_chart(seating_chart)

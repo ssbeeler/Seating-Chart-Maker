@@ -1,0 +1,7 @@
+﻿Tables,1,2,3,4,5,6,7,8,9,,,,,,,
+Seats Per Table,3,3,3,3,3,3,3,3,2,,,,,,,
+Ideal Group Size,4,,,,,,,,,,,,,,,
+Students,Apple,Banana,Blackberry,Blueberry,Cherry,Cranberry,Grape,Lemon,Orange,Plum,Raspberry,Pineapple,Strawberry,Watermelon,Peach,Persimmon
+Group Together,Blackberry Blueberry Raspberry,Apple Cranberry,,,,,,,,,,,,,,
+Do Not Pair,Lemon Grape,Banana Orange,,,,,,,,,,,,,,
+Specify Table,Plum 4 5,Cherry 1 2 3,,,,,,,,,,,,,,
