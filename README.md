@@ -1,6 +1,6 @@
 # Seating Chart Maker
 
-This is a seating chart maker that randomizes students into groups given some specifications (students to group together, students who should not be together, and students who need specific seats). 
+This program randomizes students into groups given some specifications (students to group together, students who should not be together, and students who need specific seats). 
 
 NOTE: This is a work in progress. The error-checking isn't particularly robust, and I'm sure I've missed some edge cases. Message me if you run into errors or have any questions!
 
