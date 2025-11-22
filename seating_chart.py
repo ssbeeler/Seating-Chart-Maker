@@ -9,6 +9,7 @@ import csv
 print('Enter the filename of your specifications file (ex: specifications.csv): ')
 filename = input()
 print()
+finished = False
 
 with open(filename) as specs:
     reader = csv.reader(specs)
@@ -118,103 +119,120 @@ if ideal_group_num:
             break
 
 
-# create seating chart
-seating_chart = []
-for table in range(len(tables)):
-    seating_chart.append([])
+while(not finished):
+    # create seating chart
+    seating_chart = []
+    for table in range(len(tables)):
+        seating_chart.append([])
 
-    for seat in range(seats_per_table[table]):
-        seating_chart[table].append(0)
+        for seat in range(seats_per_table[table]):
+            seating_chart[table].append(0)
 
-# assign students who need specific seats
-specific_seats = sorted(specific_seats, key=len)
 
-for i in specific_seats:
-    unseated = True
-    count = 0
-    while unseated and count < 50: 
-        student = i[0]
-        seat = random.randint(0, len(i) - 2)   # get random seat 
-        table_num = i[seat + 1] - 1   # adjusted table number (index of desired table)
-        desired_table = seating_chart[table_num]
+    # assign students who need specific seats
+    specific_seats = sorted(specific_seats, key=len)
 
-        if desired_table.count(0) > 0:  # if table has empty seat
-            # check if student has a partner
-            if any(student in group for group in group_together):
-                # check that there's room at the table for an additional person
-                for group in group_together:
-                    if student in group:
-                        if desired_table.count(0) >= len(group_together[group_together.index(group)]):  # have enough room :)
-                            for s in group:
-                                desired_table[desired_table.index(0)] = s          
+    for i in specific_seats:
+        unseated = True
+        count = 0
+        while unseated and count < 50: 
+            student = i[0]
+            seat = random.randint(0, len(i) - 2)   # get random seat 
+            table_num = i[seat + 1] - 1   # adjusted table number (index of desired table)
+            desired_table = seating_chart[table_num]
 
-                            unseated = False
-                        break
+            if desired_table.count(0) > 0:  # if table has empty seat
+                # check if student has a partner
+                if any(student in group for group in group_together):
+                    # check that there's room at the table for an additional person
+                    for group in group_together:
+                        if student in group:
+                            if desired_table.count(0) >= len(group_together[group_together.index(group)]):  # have enough room :)
+                                for s in group:
+                                    desired_table[desired_table.index(0)] = s          
 
-            else:
-                desired_table[desired_table.index(0)] = student
-                unseated = False
+                                unseated = False
+                            break
+
+                else:
+                    desired_table[desired_table.index(0)] = student
+                    unseated = False
+            
+            count += 1
         
-        count += 1
-    
-    if count == 50:
-        print('Encountered infinite loop attempting to assign students who need specific seats. Try running again. If error persists, revise specifications.')
-        quit()
+        if count == 50:
+            print('Encountered infinite loop attempting to assign students who need specific seats. Try running again. If error persists, revise specifications.')
+            quit()
 
 
-# assign students who cannot sit together 
-for group in do_not_group:
-    s1 = group[0]
-    s2 = group[1]
+    # assign students who cannot sit together 
+    for group in do_not_group:
+        s1 = group[0]
+        s2 = group[1]
 
-    if any(s1 in table for table in seating_chart):
-        if any(s2 in table for table in seating_chart):
-            # both students already seated
+        if any(s1 in table for table in seating_chart):
+            if any(s2 in table for table in seating_chart):
+                # both students already seated
+                continue
+            
+            # student 1 seated, student 2 not seated
+            place_student(s2, s1)
+        
+        elif any(s2 in table for table in seating_chart):
+            # student 2 seated, student 1 not seated
+            place_student(s1, s2)
+
+        else:
+            # neither student seated 
+            place_student(s1, '')
+
+            # student 1 seated, student 2 not seated
+            place_student(s2, s1)
+
+
+    # assign students who need to sit together
+    for group in group_together:
+        if any(group[0] in table for table in seating_chart):
             continue
+
+        unseated = True
+        count = 0
+        while unseated and count < 50:
+            table_num = random.randint(0, len(tables) - 1)   # pick random table
+            desired_table = seating_chart[table_num]
+
+            if desired_table.count(0) >= len(group):
+                for s in group:
+                    desired_table[desired_table.index(0)] = s
+                unseated = False
+
+            count += 1
         
-        # student 1 seated, student 2 not seated
-        place_student(s2, s1)
-    
-    elif any(s2 in table for table in seating_chart):
-        # student 2 seated, student 1 not seated
-        place_student(s1, s2)
-
-    else:
-        # neither student seated 
-        place_student(s1, '')
-
-        # student 1 seated, student 2 not seated
-        place_student(s2, s1)
+        if count == 50:
+            print('Encountered infinite loop attempting to assign students who need to sit together. Check specifications and try again.')
+            quit()
 
 
-# assign students who need to sit together
-for group in group_together:
-    if any(group[0] in table for table in seating_chart):
-        continue
-
-    unseated = True
-    count = 0
-    while unseated and count < 50:
-        table_num = random.randint(0, len(tables) - 1)   # pick random table
-        desired_table = seating_chart[table_num]
-
-        if desired_table.count(0) >= len(group):
-            for s in group:
-                desired_table[desired_table.index(0)] = s
-            unseated = False
-
-        count += 1
-    
-    if count == 50:
-        print('Encountered infinite loop attempting to assign students who need to sit together. Check specifications and try again.')
-        quit()
+    # assign remaining students
+    for student in students:
+        if not any(student in table for table in seating_chart):
+            place_student(student, '')
 
 
-# assign remaining students
-for student in students:
-    if not any(student in table for table in seating_chart):
-        place_student(student, '')
+    # print seating chart
+    print_seating_chart(seating_chart)
 
+    valid_response = False
+    while(not valid_response):
+        print('Rerun? Enter yes (or Y) to generate a new seating chart; no (or N) to quit.')
+        response = input()
+        print()
 
-# print seating chart
-print_seating_chart(seating_chart)
+        if response == 'Yes' or response == 'yes' or response == 'y' or response == 'Y':
+            valid_response = True
+        elif response == 'No' or response == 'no' or response == 'n' or response == 'N':
+            finished = True
+            valid_response = True
+        else: 
+            print('Invalid input. Try again.')
+            print()
